@@ -1,0 +1,103 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+def properties = new Properties()
+properties.load(rootProject.file('local.properties').newDataInputStream())
+
+android {
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude "META-INF/AL2.0"
+        exclude 'META-INF/LGPL2.1'
+    }
+
+    signingConfigs {
+        debug {
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            storePassword 'android'
+            storeFile file("${System.properties['user.home']}${File.separator}.android${File.separator}debug.keystore")
+        }
+        release {
+            keyAlias properties['keyAlias']
+            keyPassword properties['keyPassword']
+            storePassword properties['storePassword']
+            storeFile file('keystore.jks')
+        }
+    }
+
+    defaultConfig {
+        applicationId "com.storage.sample"
+        multiDexEnabled true
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+        }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            zipAlignEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    flavorDimensions "libSource"
+    productFlavors {
+        local {
+            dimension "libSource"
+            getIsDefault().set(true)
+        }
+        maven {
+            dimension "libSource"
+            configurations.all {
+                // Check for updates every build
+                resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+            }
+        }
+    }
+}
+
+    dependencies {
+        implementation fileTree(dir: "libs", include: ["*.jar"])
+//    implementation project(":storage")
+//    localImplementation project(":storage")
+//    mavenImplementation("com.anggrayudi:storage:$VERSION_NAME") { changing = true }
+
+        implementation("androidx.activity:activity:$versions.activity")
+        implementation("androidx.appcompat:appcompat:$versions.appcompat")
+        implementation("androidx.fragment:fragment:$versions.fragment")
+        implementation("androidx.core:core-ktx:$versions.core_ktx")
+        implementation("com.android.support:preference-v7:23.0.1")
+        implementation("androidx.multidex:multidex:$versions.multidex")
+        implementation("androidx.documentfile:documentfile:$versions.documentfile")
+
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$versions.coroutines")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$versions.coroutines")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$versions.coroutines")
+
+// Testing ------------------------------
+        testImplementation("org.junit.jupiter:junit-jupiter-engine:$versions.junit")
+        androidTestImplementation("androidx.test.espresso:espresso-core:$versions.espresso")
+        testImplementation("io.mockk:mockk:$versions.mockk")
+        /*testImplementation "org.mockito:mockito-core:3.3.3"
+        testImplementation "org.mockito:mockito-inline:3.3.3"
+        testImplementation "org.mockito:mockito-all:1.10.19"
+        testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
+        testImplementation "org.powermock:powermock-api-mockito2:2.0.5"
+        testImplementation "org.powermock:powermock-module-junit4:2.0.5"*/
+
+// Others -------------------------------
+        implementation("com.afollestad.material-dialogs:core:$versions.material_dialogs")
+        implementation("me.zhanghai.android.materialprogressbar:library:$versions.material_progressbar")
+        implementation("com.jakewharton.timber:timber:$versions.timber")
+    }
